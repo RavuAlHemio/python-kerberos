@@ -44,7 +44,7 @@ char* server_principal_details(const char* service, const char* hostname)
     krb5_keytab_entry entry;
     char* pname = NULL;
     
-    // Generate the principal prefix we want to match
+    /* Generate the principal prefix we want to match */
     snprintf(match, 1024, "%s/%s@", service, hostname);
     match_len = strlen(match);
     
@@ -123,7 +123,7 @@ int authenticate_gss_client_init(const char* service, const char* principal, lon
     state->username = NULL;
     state->response = NULL;
     
-    // Import server name first
+    /* Import server name first */
     name_token.length = strlen(service);
     name_token.value = (char *)service;
     
@@ -135,13 +135,13 @@ int authenticate_gss_client_init(const char* service, const char* principal, lon
         ret = AUTH_GSS_ERROR;
         goto end;
     }
-    // Use the delegate credentials if they exist
+    /* Use the delegate credentials if they exist */
     if (delegatestate && delegatestate->client_creds != GSS_C_NO_CREDENTIAL)
     {
         state->client_creds = delegatestate->client_creds;
     }
 
-    // If available use the principal to extract its associated credentials
+    /* If available use the principal to extract its associated credentials */
     else if (principal && *principal)
     {
         gss_name_t name;
@@ -213,14 +213,14 @@ int authenticate_gss_client_step(gss_client_state* state, const char* challenge)
     gss_buffer_desc output_token = GSS_C_EMPTY_BUFFER;
     int ret = AUTH_GSS_CONTINUE;
     
-    // Always clear out the old response
+    /* Always clear out the old response */
     if (state->response != NULL)
     {
         free(state->response);
         state->response = NULL;
     }
     
-    // If there is a challenge (data from the server) we need to give it to GSS
+    /* If there is a challenge (data from the server) we need to give it to GSS */
     if (challenge && *challenge)
     {
         size_t len;
@@ -228,7 +228,7 @@ int authenticate_gss_client_step(gss_client_state* state, const char* challenge)
         input_token.length = len;
     }
     
-    // Do GSSAPI step
+    /* Do GSSAPI step */
     Py_BEGIN_ALLOW_THREADS
     maj_stat = gss_init_sec_context(&min_stat,
                                     state->client_creds,
@@ -253,16 +253,17 @@ int authenticate_gss_client_step(gss_client_state* state, const char* challenge)
     }
     
     ret = (maj_stat == GSS_S_COMPLETE) ? AUTH_GSS_COMPLETE : AUTH_GSS_CONTINUE;
-    // Grab the client response to send back to the server
+    /* Grab the client response to send back to the server */
     if (output_token.length)
     {
         state->response = base64_encode((const unsigned char *)output_token.value, output_token.length);;
         maj_stat = gss_release_buffer(&min_stat, &output_token);
     }
     
-    // Try to get the user name if we have completed all GSS operations
+    /* Try to get the user name if we have completed all GSS operations */
     if (ret == AUTH_GSS_COMPLETE)
     {
+        gss_buffer_desc name_token;
         gss_name_t gssuser = GSS_C_NO_NAME;
         maj_stat = gss_inquire_context(&min_stat, state->context, &gssuser, NULL, NULL, NULL,  NULL, NULL, NULL);
         if (GSS_ERROR(maj_stat))
@@ -272,7 +273,6 @@ int authenticate_gss_client_step(gss_client_state* state, const char* challenge)
             goto end;
         }
         
-        gss_buffer_desc name_token;
         name_token.length = 0;
         maj_stat = gss_display_name(&min_stat, gssuser, &name_token, NULL);
         if (GSS_ERROR(maj_stat))
@@ -311,7 +311,7 @@ int authenticate_gss_client_unwrap(gss_client_state *state, const char *challeng
 	int ret = AUTH_GSS_CONTINUE;
 	int conf = 0;
     
-	// Always clear out the old response
+	/* Always clear out the old response */
 	if (state->response != NULL)
 	{
 		free(state->response);
@@ -319,7 +319,7 @@ int authenticate_gss_client_unwrap(gss_client_state *state, const char *challeng
 		state->responseConf = 0;
 	}
     
-	// If there is a challenge (data from the server) we need to give it to GSS
+	/* If there is a challenge (data from the server) we need to give it to GSS */
 	if (challenge && *challenge)
 	{
 		size_t len;
@@ -327,7 +327,7 @@ int authenticate_gss_client_unwrap(gss_client_state *state, const char *challeng
 		input_token.length = len;
 	}
     
-	// Do GSSAPI step
+	/* Do GSSAPI step */
 	maj_stat = gss_unwrap(&min_stat,
                           state->context,
                           &input_token,
@@ -344,7 +344,7 @@ int authenticate_gss_client_unwrap(gss_client_state *state, const char *challeng
 	else
 		ret = AUTH_GSS_COMPLETE;
     
-	// Grab the client response
+	/* Grab the client response */
 	if (output_token.length)
 	{
 		state->response = base64_encode((const unsigned char *)output_token.value, output_token.length);
@@ -369,7 +369,7 @@ int authenticate_gss_client_wrap(gss_client_state* state, const char* challenge,
 	char buf[4096], server_conf_flags;
 	unsigned long buf_size;
     
-	// Always clear out the old response
+	/* Always clear out the old response */
 	if (state->response != NULL)
 	{
 		free(state->response);
@@ -384,7 +384,7 @@ int authenticate_gss_client_wrap(gss_client_state* state, const char* challenge,
 	}
     
 	if (user) {
-		// get bufsize
+		/* get bufsize */
 		server_conf_flags = ((char*) input_token.value)[0];
 		((char*) input_token.value)[0] = 0;
 		buf_size = ntohl(*((long *) input_token.value));
@@ -397,17 +397,17 @@ int authenticate_gss_client_wrap(gss_client_state* state, const char* challenge,
 		printf("Maximum GSS token size is %ld\n", buf_size);
 #endif
         
-		// agree to terms (hack!)
-		buf_size = htonl(buf_size); // not relevant without integrity/privacy
+		/* agree to terms (hack!) */
+		buf_size = htonl(buf_size); /* not relevant without integrity/privacy */
 		memcpy(buf, &buf_size, 4);
 		buf[0] = GSS_AUTH_P_NONE;
-		// server decides if principal can log in as user
+		/* server decides if principal can log in as user */
 		strncpy(buf + 4, user, sizeof(buf) - 4);
 		input_token.value = buf;
 		input_token.length = 4 + strlen(user);
 	}
     
-	// Do GSSAPI wrap
+	/* Do GSSAPI wrap */
 	maj_stat = gss_wrap(&min_stat,
 						state->context,
 						protect,
@@ -424,7 +424,7 @@ int authenticate_gss_client_wrap(gss_client_state* state, const char* challenge,
 	}
 	else
 		ret = AUTH_GSS_COMPLETE;
-	// Grab the client response to send back to the server
+	/* Grab the client response to send back to the server */
 	if (output_token.length)
 	{
 		state->response = base64_encode((const unsigned char *)output_token.value, output_token.length);;
@@ -442,6 +442,7 @@ int authenticate_gss_server_init(const char *service, gss_server_state *state)
     OM_uint32 min_stat;
     gss_buffer_desc name_token = GSS_C_EMPTY_BUFFER;
     int ret = AUTH_GSS_COMPLETE;
+    size_t service_len = strlen(service);
     
     state->context = GSS_C_NO_CONTEXT;
     state->server_name = GSS_C_NO_NAME;
@@ -453,11 +454,10 @@ int authenticate_gss_server_init(const char *service, gss_server_state *state)
     state->response = NULL;
     state->ccname = NULL;
     
-    // Server name may be empty which means we aren't going to create our own creds
-    size_t service_len = strlen(service);
+    /* Server name may be empty which means we aren't going to create our own creds */
     if (service_len != 0)
     {
-        // Import server name first
+        /* Import server name first */
         name_token.length = strlen(service);
         name_token.value = (char *)service;
         
@@ -470,7 +470,7 @@ int authenticate_gss_server_init(const char *service, gss_server_state *state)
             goto end;
         }
         
-        // Get credentials
+        /* Get credentials */
         maj_stat = gss_acquire_cred(&min_stat, state->server_name, GSS_C_INDEFINITE,
                                     GSS_C_NO_OID_SET, GSS_C_ACCEPT, &state->server_creds, NULL, NULL);
         
@@ -535,14 +535,14 @@ int authenticate_gss_server_step(gss_server_state *state, const char *challenge)
     gss_buffer_desc output_token = GSS_C_EMPTY_BUFFER;
     int ret = AUTH_GSS_CONTINUE;
     
-    // Always clear out the old response
+    /* Always clear out the old response */
     if (state->response != NULL)
     {
         free(state->response);
         state->response = NULL;
     }
     
-    // If there is a challenge (data from the server) we need to give it to GSS
+    /* If there is a challenge (data from the server) we need to give it to GSS */
     if (challenge && *challenge)
     {
         size_t len;
@@ -577,14 +577,14 @@ int authenticate_gss_server_step(gss_server_state *state, const char *challenge)
         goto end;
     }
     
-    // Grab the server response to send back to the client
+    /* Grab the server response to send back to the client */
     if (output_token.length)
     {
         state->response = base64_encode((const unsigned char *)output_token.value, output_token.length);;
         maj_stat = gss_release_buffer(&min_stat, &output_token);
     }
     
-    // Get the user name
+    /* Get the user name */
     maj_stat = gss_display_name(&min_stat, state->client_name, &output_token, NULL);
     if (GSS_ERROR(maj_stat))
     {
@@ -596,7 +596,7 @@ int authenticate_gss_server_step(gss_server_state *state, const char *challenge)
     strncpy(state->username, (char*) output_token.value, output_token.length);
     state->username[output_token.length] = 0;
     
-    // Get the target name if no server creds were supplied
+    /* Get the target name if no server creds were supplied */
     if (state->server_creds == GSS_C_NO_CREDENTIAL)
     {
         gss_name_t target_name = GSS_C_NO_NAME;

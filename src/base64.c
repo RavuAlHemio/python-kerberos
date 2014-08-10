@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-// base64 tables
+/* base64 tables */
 static char basis_64[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static signed char index_64[128] =
@@ -35,11 +35,11 @@ static signed char index_64[128] =
 };
 #define CHAR64(c)  (((c) < 0 || (c) > 127) ? -1 : index_64[(c)])
 
-// base64_encode    :    base64 encode
-//
-// value            :    data to encode
-// vlen             :    length of data
-// (result)         :    new char[] - c-str of result
+/* base64_encode    :    base64 encode */
+
+/* value            :    data to encode */
+/* vlen             :    length of data */
+/* (result)         :    new char[] - c-str of result */
 char *base64_encode(const unsigned char *value, size_t vlen)
 {
     char *result = (char *)malloc((vlen * 4) / 3 + 5);
@@ -55,8 +55,9 @@ char *base64_encode(const unsigned char *value, size_t vlen)
     }
     if (vlen > 0)
     {
+        unsigned char oval;
         *out++ = basis_64[value[0] >> 2];
-        unsigned char oval = (value[0] << 4) & 0x30;
+        oval = (value[0] << 4) & 0x30;
         if (vlen > 1) oval |= value[1] >> 4;
         *out++ = basis_64[oval];
         *out++ = (vlen < 2) ? '=' : basis_64[(value[1] << 2) & 0x3C];
@@ -67,19 +68,20 @@ char *base64_encode(const unsigned char *value, size_t vlen)
     return result;
 }
 
-// base64_decode    :    base64 decode
-//
-// value            :    c-str to decode
-// rlen             :    length of decoded result
-// (result)         :    new unsigned char[] - decoded result
+/* base64_decode    :    base64 decode */
+
+/* value            :    c-str to decode */
+/* rlen             :    length of decoded result */
+/* (result)         :    new unsigned char[] - decoded result */
 unsigned char *base64_decode(const char *value, size_t *rlen)
 {
-    *rlen = 0;
     int c1, c2, c3, c4;
 
     size_t vlen = strlen(value);
     unsigned char *result =(unsigned char *)malloc((vlen * 3) / 4 + 1);
     unsigned char *out = result;
+
+    *rlen = 0;
 
     while (1)
     {
