@@ -52,7 +52,7 @@ class SecureFtp(FTP):
                         rc = kerberos.authGSSClientStep(self.vc, resp[9:])
                         assert ((resp[:3] == '235' and rc == 1) or 
                                 (resp[:3] == '335' and rc == 0))
-            print "Authenticated as %s" % kerberos.authGSSClientUserName(self.vc)
+            print("Authenticated as %s" % kerberos.authGSSClientUserName(self.vc))
 
             # Monkey patch ftplib
             self.putcmd = self.mic_putcmd
@@ -73,7 +73,7 @@ def test():
     from getopt import getopt
 
     if len(sys.argv) < 2:
-        print test.__doc__
+        print(test.__doc__)
         sys.exit(0)
 
     (opts, args) = getopt(sys.argv[1:], "d:u:r:")
@@ -115,7 +115,7 @@ def test():
             ftp.gssapi_login(userid)
         else:
             ftp.login(userid, passwd, acct)
-    except ftplib.error_perm, e:
+    except ftplib.error_perm as e:
         # Fall back to regular authentication
         ftp.login(userid, passwd, acct)
     for file in args[1:]:
