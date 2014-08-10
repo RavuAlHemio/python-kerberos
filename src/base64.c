@@ -58,7 +58,10 @@ char *base64_encode(const unsigned char *value, size_t vlen)
         unsigned char oval;
         *out++ = basis_64[value[0] >> 2];
         oval = (value[0] << 4) & 0x30;
-        if (vlen > 1) oval |= value[1] >> 4;
+        if (vlen > 1)
+        {
+            oval |= value[1] >> 4;
+        }
         *out++ = basis_64[oval];
         *out++ = (vlen < 2) ? '=' : basis_64[(value[1] << 2) & 0x3C];
         *out++ = '=';
@@ -86,19 +89,29 @@ unsigned char *base64_decode(const char *value, size_t *rlen)
     while (1)
     {
         if (value[0]==0)
+        {
             return result;
+        }
         c1 = value[0];
         if (CHAR64(c1) == -1)
+        {
             goto base64_decode_error;;
+        }
         c2 = value[1];
         if (CHAR64(c2) == -1)
+        {
             goto base64_decode_error;;
+        }
         c3 = value[2];
         if ((c3 != '=') && (CHAR64(c3) == -1))
+        {
             goto base64_decode_error;;
+        }
         c4 = value[3];
         if ((c4 != '=') && (CHAR64(c4) == -1))
+        {
             goto base64_decode_error;;
+        }
 
         value += 4;
         *out++ = (CHAR64(c1) << 2) | (CHAR64(c2) >> 4);

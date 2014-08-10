@@ -102,11 +102,17 @@ end:
     printf("kerb_authenticate_user_krb5pwd ret=%d user=%s authtype=%s\n", ret, user, "Basic");
 #endif
     if (name)
+    {
         free(name);
+    }
     if (client)
+    {
         krb5_free_principal(kcontext, client);
+    }
     if (server)
+    {
         krb5_free_principal(kcontext, server);
+    }
     krb5_free_context(kcontext);
 
     return ret;

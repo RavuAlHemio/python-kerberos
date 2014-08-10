@@ -34,14 +34,20 @@ static PyObject *checkPassword(PyObject *self, PyObject *args)
     int result = 0;
 
     if (!PyArg_ParseTuple(args, "ssss", &user, &pswd, &service, &default_realm))
+    {
         return NULL;
+    }
 
     result = authenticate_user_krb5pwd(user, pswd, service, default_realm);
 
     if (result)
+    {
         return Py_INCREF(Py_True), Py_True;
+    }
     else
+    {
         return NULL;
+    }
 }
 
 static PyObject *changePassword(PyObject *self, PyObject *args)
@@ -52,14 +58,20 @@ static PyObject *changePassword(PyObject *self, PyObject *args)
     int result = 0;
 
     if (!PyArg_ParseTuple(args, "sss", &user, &oldpswd, &newpswd))
+    {
         return NULL;
+    }
 
     result = change_user_krb5pwd(user, oldpswd, newpswd);
 
     if (result)
+    {
 	return Py_INCREF(Py_True), Py_True;
+    }
     else
+    {
 	return NULL;
+    }
 }
 
 static PyObject *getServerPrincipalDetails(PyObject *self, PyObject *args)
@@ -69,7 +81,9 @@ static PyObject *getServerPrincipalDetails(PyObject *self, PyObject *args)
     char* result;
 
     if (!PyArg_ParseTuple(args, "ss", &service, &hostname))
+    {
         return NULL;
+    }
 
     result = server_principal_details(service, hostname);
 
@@ -80,7 +94,9 @@ static PyObject *getServerPrincipalDetails(PyObject *self, PyObject *args)
         return pyresult;
     }
     else
+    {
         return NULL;
+    }
 }
 
 static PyObject* authGSSClientInit(PyObject* self, PyObject* args, PyObject* keywds)
@@ -96,17 +112,23 @@ static PyObject* authGSSClientInit(PyObject* self, PyObject* args, PyObject* key
     int result = 0;
 
     if (!PyArg_ParseTupleAndKeywords(args, keywds, "s|slO", kwlist, &service, &principal, &gss_flags, &pydelegatestate))
+    {
         return NULL;
+    }
 
     state = (gss_client_state *) malloc(sizeof(gss_client_state));
     pystate = PyCapsule_New(state, NULL, NULL);
 
     if (PyCapsule_IsValid(pydelegatestate, NULL))
+    {
         delegatestate = PyCapsule_GetPointer(pydelegatestate, NULL);
+    }
 
     result = authenticate_gss_client_init(service, principal, gss_flags, delegatestate, state);
     if (result == AUTH_GSS_ERROR)
+    {
         return NULL;
+    }
 
     return Py_BuildValue("(iO)", result, pystate);
 }
@@ -118,7 +140,9 @@ static PyObject *authGSSClientClean(PyObject *self, PyObject *args)
     int result = 0;
 
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -145,7 +169,9 @@ static PyObject *authGSSClientStep(PyObject *self, PyObject *args)
     int result = 0;
 
     if (!PyArg_ParseTuple(args, "Os", &pystate, &challenge))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -154,11 +180,15 @@ static PyObject *authGSSClientStep(PyObject *self, PyObject *args)
 
     state = (gss_client_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
 
     result = authenticate_gss_client_step(state, challenge);
     if (result == AUTH_GSS_ERROR)
+    {
         return NULL;
+    }
 
     return Py_BuildValue("i", result);
 }
@@ -169,7 +199,9 @@ static PyObject *authGSSClientResponseConf(PyObject *self, PyObject *args)
     PyObject *pystate;
 
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -178,7 +210,9 @@ static PyObject *authGSSClientResponseConf(PyObject *self, PyObject *args)
 
     state = (gss_client_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
 
     return Py_BuildValue("i", state->responseConf);
 }
@@ -189,7 +223,9 @@ static PyObject *authGSSServerHasDelegated(PyObject *self, PyObject *args)
     PyObject *pystate;
 
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -198,7 +234,9 @@ static PyObject *authGSSServerHasDelegated(PyObject *self, PyObject *args)
 
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
 
     return PyBool_FromLong(authenticate_gss_server_has_delegated(state));
 }
@@ -209,7 +247,9 @@ static PyObject *authGSSClientResponse(PyObject *self, PyObject *args)
     PyObject *pystate;
 
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -218,7 +258,9 @@ static PyObject *authGSSClientResponse(PyObject *self, PyObject *args)
 
     state = (gss_client_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
 
     return Py_BuildValue("s", state->response);
 }
@@ -229,7 +271,9 @@ static PyObject *authGSSClientUserName(PyObject *self, PyObject *args)
     PyObject *pystate;
 
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -238,7 +282,9 @@ static PyObject *authGSSClientUserName(PyObject *self, PyObject *args)
 
     state = (gss_client_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
 
     return Py_BuildValue("s", state->username);
 }
@@ -251,7 +297,9 @@ static PyObject *authGSSClientUnwrap(PyObject *self, PyObject *args)
 	int result = 0;
 
 	if (!PyArg_ParseTuple(args, "Os", &pystate, &challenge))
+	{
 		return NULL;
+	}
 
 	if (!PyCapsule_IsValid(pystate, NULL)) {
 		PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -260,11 +308,15 @@ static PyObject *authGSSClientUnwrap(PyObject *self, PyObject *args)
 
 	state = (gss_client_state *)PyCapsule_GetPointer(pystate, NULL);
 	if (state == NULL)
+	{
 		return NULL;
+	}
 
 	result = authenticate_gss_client_unwrap(state, challenge);
 	if (result == AUTH_GSS_ERROR)
+	{
 		return NULL;
+	}
 
 	return Py_BuildValue("i", result);
 }
@@ -279,7 +331,9 @@ static PyObject *authGSSClientWrap(PyObject *self, PyObject *args)
 	int result = 0;
 
 	if (!PyArg_ParseTuple(args, "Os|zi", &pystate, &challenge, &user, &protect))
+	{
 		return NULL;
+	}
 
 	if (!PyCapsule_IsValid(pystate, NULL)) {
 		PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -288,11 +342,15 @@ static PyObject *authGSSClientWrap(PyObject *self, PyObject *args)
 
 	state = (gss_client_state *)PyCapsule_GetPointer(pystate, NULL);
 	if (state == NULL)
+	{
 		return NULL;
+	}
 
 	result = authenticate_gss_client_wrap(state, challenge, user, protect);
 	if (result == AUTH_GSS_ERROR)
+	{
 		return NULL;
+	}
 
 	return Py_BuildValue("i", result);
 }
@@ -305,14 +363,18 @@ static PyObject *authGSSServerInit(PyObject *self, PyObject *args)
     int result = 0;
 
     if (!PyArg_ParseTuple(args, "s", &service))
+    {
         return NULL;
+    }
 
     state = (gss_server_state *) malloc(sizeof(gss_server_state));
     pystate = PyCapsule_New(state, NULL, NULL);
 
     result = authenticate_gss_server_init(service, state);
     if (result == AUTH_GSS_ERROR)
+    {
         return NULL;
+    }
 
     return Py_BuildValue("(iO)", result, pystate);
 }
@@ -324,7 +386,9 @@ static PyObject *authGSSServerClean(PyObject *self, PyObject *args)
     int result = 0;
 
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -351,7 +415,9 @@ static PyObject *authGSSServerStep(PyObject *self, PyObject *args)
     int result = 0;
 
     if (!PyArg_ParseTuple(args, "Os", &pystate, &challenge))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -360,11 +426,15 @@ static PyObject *authGSSServerStep(PyObject *self, PyObject *args)
 
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
 
     result = authenticate_gss_server_step(state, challenge);
     if (result == AUTH_GSS_ERROR)
+    {
         return NULL;
+    }
 
     return Py_BuildValue("i", result);
 }
@@ -376,7 +446,9 @@ static PyObject *authGSSServerStoreDelegate(PyObject *self, PyObject *args)
     int result = 0;
 
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -385,11 +457,15 @@ static PyObject *authGSSServerStoreDelegate(PyObject *self, PyObject *args)
 
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
 
     result = authenticate_gss_server_store_delegate(state);
     if (result == AUTH_GSS_ERROR)
+    {
         return NULL;
+    }
     
     return Py_BuildValue("i", result);
 }
@@ -400,7 +476,9 @@ static PyObject *authGSSServerResponse(PyObject *self, PyObject *args)
     PyObject *pystate;
 
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
 
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -409,7 +487,9 @@ static PyObject *authGSSServerResponse(PyObject *self, PyObject *args)
 
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
 
     return Py_BuildValue("s", state->response);
 }
@@ -420,7 +500,9 @@ static PyObject *authGSSServerUserName(PyObject *self, PyObject *args)
     PyObject *pystate;
     
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
     
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -429,7 +511,9 @@ static PyObject *authGSSServerUserName(PyObject *self, PyObject *args)
     
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
     
     return Py_BuildValue("s", state->username);
 }
@@ -440,7 +524,9 @@ static PyObject *authGSSServerCacheName(PyObject *self, PyObject *args)
     PyObject *pystate;
     
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
     
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -449,7 +535,9 @@ static PyObject *authGSSServerCacheName(PyObject *self, PyObject *args)
     
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
     
     return Py_BuildValue("s", state->ccname);
 }
@@ -460,7 +548,9 @@ static PyObject *authGSSServerTargetName(PyObject *self, PyObject *args)
     PyObject *pystate;
     
     if (!PyArg_ParseTuple(args, "O", &pystate))
+    {
         return NULL;
+    }
     
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
@@ -469,7 +559,9 @@ static PyObject *authGSSServerTargetName(PyObject *self, PyObject *args)
     
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
+    {
         return NULL;
+    }
     
     return Py_BuildValue("s", state->targetname);
 }
@@ -540,23 +632,31 @@ PyObject *PyInit_kerberos(void)
 
     /* create the base exception class */
     if (!(KrbException_class = PyErr_NewException("kerberos.KrbError", NULL, NULL)))
+    {
         goto error;
+    }
     PyDict_SetItemString(d, "KrbError", KrbException_class);
     Py_INCREF(KrbException_class);
 
     /* ...and the derived exceptions */
     if (!(BasicAuthException_class = PyErr_NewException("kerberos.BasicAuthError", KrbException_class, NULL)))
+    {
         goto error;
+    }
     Py_INCREF(BasicAuthException_class);
     PyDict_SetItemString(d, "BasicAuthError", BasicAuthException_class);
 
     if (!(PwdChangeException_class = PyErr_NewException("kerberos.PwdChangeError", KrbException_class, NULL)))
+    {
         goto error;
+    }
     Py_INCREF(PwdChangeException_class);
     PyDict_SetItemString(d, "PwdChangeError", PwdChangeException_class);
 
     if (!(GssException_class = PyErr_NewException("kerberos.GSSError", KrbException_class, NULL)))
+    {
         goto error;
+    }
     Py_INCREF(GssException_class);
     PyDict_SetItemString(d, "GSSError", GssException_class);
 
@@ -577,7 +677,9 @@ PyObject *PyInit_kerberos(void)
 
 error:
     if (PyErr_Occurred())
+    {
         PyErr_SetString(PyExc_ImportError, "kerberos: init failed");
+    }
 
     return NULL;
 }

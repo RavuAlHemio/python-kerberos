@@ -46,8 +46,9 @@ static krb5_error_code verify_krb5_user(krb5_context context,
     {
         char *name = NULL;
         code = krb5_unparse_name(context, principal, &name);
-        if (!code)
+        if (!code) {
             printf("Trying to get TGT for user %s\n", name);
+        }
         free(name);
     }
 #endif
@@ -100,8 +101,9 @@ int change_user_krb5pwd(const char *user, const char* oldpswd, const char *newps
     }
 
     code = verify_krb5_user(kcontext, client, oldpswd, service, &creds);
-    if (!code) /* exception set by verify_krb5_user */
+    if (!code) { /* exception set by verify_krb5_user */
         goto end;
+    }
 
     code = krb5_change_password(kcontext, &creds, (char*)newpswd,
                                 &result_code, &result_code_string, &result_string);
@@ -127,10 +129,12 @@ end:
 #ifdef PRINTFS
     printf("%s: ret=%d user=%s\n", __FUNCTION__, ret, name);
 #endif
-    if (name)
+    if (name) {
         free(name);
-    if (client)
+    }
+    if (client) {
         krb5_free_principal(kcontext, client);
+    }
     krb5_free_context(kcontext);
     return ret;
 }

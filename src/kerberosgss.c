@@ -100,9 +100,13 @@ char* server_principal_details(const char* service, const char* hostname)
     
 end:
     if (cursor)
+    {
         krb5_kt_end_seq_get(kcontext, kt, &cursor);
+    }
     if (kt)
+    {
         krb5_kt_close(kcontext, kt);
+    }
     krb5_free_context(kcontext);
     
     return result;
@@ -186,11 +190,17 @@ int authenticate_gss_client_clean(gss_client_state *state)
     int ret = AUTH_GSS_COMPLETE;
     
     if (state->context != GSS_C_NO_CONTEXT)
+    {
         maj_stat = gss_delete_sec_context(&min_stat, &state->context, GSS_C_NO_BUFFER);
+    }
     if (state->server_name != GSS_C_NO_NAME)
+    {
         maj_stat = gss_release_name(&min_stat, &state->server_name);
+    }
     if (state->client_creds != GSS_C_NO_CREDENTIAL)
+    {
         maj_stat = gss_release_cred(&min_stat, &state->client_creds);
+    }
     if (state->username != NULL)
     {
         free(state->username);
@@ -278,7 +288,9 @@ int authenticate_gss_client_step(gss_client_state* state, const char* challenge)
         if (GSS_ERROR(maj_stat))
         {
             if (name_token.value)
+            {
                 gss_release_buffer(&min_stat, &name_token);
+            }
             gss_release_name(&min_stat, &gssuser);
             
             set_gss_error(maj_stat, min_stat);
@@ -296,9 +308,13 @@ int authenticate_gss_client_step(gss_client_state* state, const char* challenge)
     }
 end:
     if (output_token.value)
+    {
         gss_release_buffer(&min_stat, &output_token);
+    }
     if (input_token.value)
+    {
         free(input_token.value);
+    }
     return ret;
 }
 
@@ -342,7 +358,9 @@ int authenticate_gss_client_unwrap(gss_client_state *state, const char *challeng
 		goto end;
 	}
 	else
+	{
 		ret = AUTH_GSS_COMPLETE;
+	}
     
 	/* Grab the client response */
 	if (output_token.length)
@@ -353,9 +371,13 @@ int authenticate_gss_client_unwrap(gss_client_state *state, const char *challeng
 	}
 end:
 	if (output_token.value)
+	{
 		gss_release_buffer(&min_stat, &output_token);
+	}
 	if (input_token.value)
+	{
 		free(input_token.value);
+	}
 	return ret;
 }
 
@@ -423,7 +445,9 @@ int authenticate_gss_client_wrap(gss_client_state* state, const char* challenge,
 		goto end;
 	}
 	else
+	{
 		ret = AUTH_GSS_COMPLETE;
+	}
 	/* Grab the client response to send back to the server */
 	if (output_token.length)
 	{
@@ -432,7 +456,9 @@ int authenticate_gss_client_wrap(gss_client_state* state, const char* challenge,
 	}
 end:
 	if (output_token.value)
+	{
 		gss_release_buffer(&min_stat, &output_token);
+	}
 	return ret;
 }
 
@@ -493,15 +519,25 @@ int authenticate_gss_server_clean(gss_server_state *state)
     int ret = AUTH_GSS_COMPLETE;
     
     if (state->context != GSS_C_NO_CONTEXT)
+    {
         maj_stat = gss_delete_sec_context(&min_stat, &state->context, GSS_C_NO_BUFFER);
+    }
     if (state->server_name != GSS_C_NO_NAME)
+    {
         maj_stat = gss_release_name(&min_stat, &state->server_name);
+    }
     if (state->client_name != GSS_C_NO_NAME)
+    {
         maj_stat = gss_release_name(&min_stat, &state->client_name);
+    }
     if (state->server_creds != GSS_C_NO_CREDENTIAL)
+    {
         maj_stat = gss_release_cred(&min_stat, &state->server_creds);
+    }
     if (state->client_creds != GSS_C_NO_CREDENTIAL)
+    {
         maj_stat = gss_release_cred(&min_stat, &state->client_creds);
+    }
     if (state->username != NULL)
     {
         free(state->username);
@@ -623,9 +659,13 @@ int authenticate_gss_server_step(gss_server_state *state, const char *challenge)
     
 end:
     if (output_token.length)
+    {
         gss_release_buffer(&min_stat, &output_token);
+    }
     if (input_token.value)
+    {
         free(input_token.value);
+    }
     return ret;
 }
 
@@ -651,7 +691,9 @@ static void set_gss_error(OM_uint32 err_maj, OM_uint32 err_min)
                                        &msg_ctx,
                                        &status_string);
         if (GSS_ERROR(maj_stat))
+        {
             break;
+        }
         strncpy(buf_maj, (char*) status_string.value, sizeof(buf_maj));
         gss_release_buffer(&min_stat, &status_string);
         
@@ -720,9 +762,13 @@ int authenticate_gss_server_store_delegate(gss_server_state *state)
 
     end:
     if (princ)
+    {
         krb5_free_principal(context, princ);
+    }
     if (ccache)
+    {
         krb5_cc_destroy(context, ccache);
+    }
     krb5_free_context(context);
     return ret;
 }
@@ -769,7 +815,9 @@ int create_krb5_ccache(gss_server_state *state,
 
     end:
     if (tmp_ccache)
+    {
         krb5_cc_destroy(kcontext, tmp_ccache);
+    }
 
     state->ccname = (char *)malloc(32*sizeof(char));
     strcpy(state->ccname, ccname);
