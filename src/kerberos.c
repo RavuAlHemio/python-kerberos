@@ -466,7 +466,7 @@ static PyObject *authGSSServerStoreDelegate(PyObject *self, PyObject *args)
     {
         return NULL;
     }
-    
+
     return Py_BuildValue("i", result);
 }
 
@@ -498,23 +498,23 @@ static PyObject *authGSSServerUserName(PyObject *self, PyObject *args)
 {
     gss_server_state *state;
     PyObject *pystate;
-    
+
     if (!PyArg_ParseTuple(args, "O", &pystate))
     {
         return NULL;
     }
-    
+
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
         return NULL;
     }
-    
+
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
     {
         return NULL;
     }
-    
+
     return Py_BuildValue("s", state->username);
 }
 
@@ -522,23 +522,23 @@ static PyObject *authGSSServerCacheName(PyObject *self, PyObject *args)
 {
     gss_server_state *state;
     PyObject *pystate;
-    
+
     if (!PyArg_ParseTuple(args, "O", &pystate))
     {
         return NULL;
     }
-    
+
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
         return NULL;
     }
-    
+
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
     {
         return NULL;
     }
-    
+
     return Py_BuildValue("s", state->ccname);
 }
 
@@ -546,23 +546,23 @@ static PyObject *authGSSServerTargetName(PyObject *self, PyObject *args)
 {
     gss_server_state *state;
     PyObject *pystate;
-    
+
     if (!PyArg_ParseTuple(args, "O", &pystate))
     {
         return NULL;
     }
-    
+
     if (!PyCapsule_IsValid(pystate, NULL)) {
         PyErr_SetString(PyExc_TypeError, "Expected a context object");
         return NULL;
     }
-    
+
     state = (gss_server_state *)PyCapsule_GetPointer(pystate, NULL);
     if (state == NULL)
     {
         return NULL;
     }
-    
+
     return Py_BuildValue("s", state->targetname);
 }
 

@@ -41,7 +41,7 @@ static krb5_error_code verify_krb5_user(krb5_context context,
     krb5_get_init_creds_opt gic_options;
     krb5_error_code code;
     int ret = 0;
-    
+
 #ifdef PRINTFS
     {
         char *name = NULL;
@@ -58,7 +58,7 @@ static krb5_error_code verify_krb5_user(krb5_context context,
     krb5_get_init_creds_opt_set_renew_life(&gic_options, 0);
 
     memset(creds, 0, sizeof(krb5_creds));
-    
+
     code = krb5_get_init_creds_password(context, creds, principal,
                                         (char *)password, NULL, NULL, 0,
                                         (char *)service, &gic_options);
@@ -93,7 +93,7 @@ int change_user_krb5pwd(const char *user, const char* oldpswd, const char *newps
 
     name = (char *)malloc(256);
     snprintf(name, 256, "%s", user);
-        
+
     code = krb5_parse_name(kcontext, name, &client);
     if (code) {
         set_pwchange_error(kcontext, code);
